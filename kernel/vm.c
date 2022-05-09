@@ -281,6 +281,12 @@ freewalk(pagetable_t pagetable)
   kfree((void*)pagetable);
 }
 
+void
+vmprint(pagetable_t pagetable)
+{
+  printf("not implemented yet");
+}
+
 // Free user memory pages,
 // then free page-table pages.
 void
