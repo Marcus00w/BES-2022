@@ -97,7 +97,6 @@ exec(char *path, char **argv)
   if(copyout(pagetable, sp, (char *)ustack, (argc+1)*sizeof(uint64)) < 0)
     goto bad;
 
-  // arguments to user main(argc, argv)
   // argc is returned via the system call return
   // value, which goes in a0.
   p->trapframe->a1 = sp;
@@ -116,7 +115,7 @@ exec(char *path, char **argv)
   p->trapframe->sp = sp; // initial stack pointer
   proc_freepagetable(oldpagetable, oldsz);
 
-  if(ip == 1)
+  if(p->pid == 1)
     vmprint(p->pagetable);
 
   return argc; // this ends up in a0, the first argument to main(argc, argv)

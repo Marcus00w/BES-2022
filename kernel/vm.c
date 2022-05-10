@@ -281,10 +281,56 @@ freewalk(pagetable_t pagetable)
   kfree((void*)pagetable);
 }
 
+void 
+printDependent(pte_t pte,int i, int level)
+{
+  char* stringLevel = "";
+  if(level == 0) {
+    stringLevel = "..";
+  }
+  else if(level == 1) {
+    stringLevel = ".. ..";
+  }
+  else if(level == 2) {
+    stringLevel = ".. .. ..";
+  }
+
+  if(pte & PTE_V) {
+      char* v = "-";
+      if(pte & PTE_V) v = "V";
+      char* r = "-";
+      if(pte & PTE_R) r = "R";
+      char* w = "-";
+      if(pte & PTE_W) w = "W";
+      char* x = "-";
+      if(pte & PTE_X) x = "X";
+      char* u = "-";
+      if(pte & PTE_U) u = "U";
+      printf("%s %d: pte %p pa %p flags %s%s%s%s%s\n",stringLevel,i,pte,PTE2PA(pte),u,x,w,r,v);
+  }
+}
+
 void
 vmprint(pagetable_t pagetable)
 {
-  printf("not implemented yet");
+  for(int i=0; i<512; i++) {
+    pte_t pte = pagetable[i];
+    printDependent(pte,i,0);
+    if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0) {
+      pagetable_t child = (pagetable_t) PTE2PA(pte);
+      for(int j=0; j<512; j++) {
+        pte_t pte_child = child[j];
+        printDependent(pte_child,j,1);
+        if((pte_child & PTE_V) && (pte_child & (PTE_R|PTE_W|PTE_X)) == 0) {
+          pagetable_t subchild = (pagetable_t) PTE2PA(pte_child);
+          for(int k = 0; k<512; k++) {
+            pte_t pte_subchild = subchild[k];
+            printDependent(pte_subchild,k,2);
+          }
+        }
+      }
+    }
+  }
 }
 
 // Free user memory pages,
